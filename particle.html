@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>粒子</title>
+    <style type="text/css">
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        canvas{
+            background: #000;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+</body>
+
+    <script type="text/javascript">
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext('2d');//获取画笔
+        var cW = window.innerWidth;
+        var cH = window.innerHeight;
+        var num = 50; //粒子数的个数
+        var particles = [];
+        // var a = 100;
+        // var b = 100;
+       canvas.width = cW;
+       canvas.height = cH;
+       // setInterval(function () {
+       //     render(a,b);
+       // },100);  //循环定时器
+        //乱帧 浏览器的刷新频率是60FPS 1秒60帧 如果你的循环时间小于1000/60ms的时候，就会出现乱帧
+
+        //当你的执行函数的运行时间超过了循环时间，就会产生队列错乱
+
+        //js是基于原型的动态的解释性脚本语言 prototype
+        //动态--词法作用域 上下文 this
+
+        // Math.random() 产生一个0-1之间的随机数 包括0，不包括1
+        //取整 parseInt()-保留整数部分 Math.ceil()--向上取整 Math.floor()--向下取整  Math.round()--四舍五入
+        //递归模拟
+        // function count() {
+        //     console.log(1);
+        //     setTimeout(count(),1000);
+        // }
+        // count();
+        // function render(x,y) {
+        //     a++;
+        //     b++;
+        //     ctx.clearRect(0,0,cW,cH);
+        //     ctx.beginPath();//开始新的路径
+        //     ctx.arc(x,y,20,0,Math.PI*2,false);
+        //     ctx.fillStyle = "green";
+        //     ctx.fill();
+        //     // requestAnimationFrame(render); //CPU钟摆频率
+        // }
+        // render(a,b);
+
+        function Particle() {
+            this.x = Math.random()*cW;
+            this.y = Math.random()*cH;
+            this.radius = 30;
+            this.vx = Math.random()*5;
+            this.vy = Math.random()*5;
+            var r = Math.random()*255>>0;
+            var g = Math.random()*255>>0;
+            var b = Math.random()*255>>0;
+            this.color = "rgba("+r+","+g+","+b+",.5)";
+            // min+Math.random()*(max-min); 生成min-max之间的随机数
+        }
+
+        Particle.prototype = {
+            drawCircle:function (ctx) {
+                var grd = ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.radius);
+                grd.addColorStop(0,'#fff');
+                grd.addColorStop(0.4,'#fff');
+                grd.addColorStop(0.4,this.color);
+                grd.addColorStop(1,'rgba(0,0,0,0.5)');
+                ctx.beginPath();
+                ctx.arc(this.x,this.y,this.radius,0,Math.PI*2,false);
+                ctx.fillStyle = grd;
+                ctx.fill();
+            },
+            update:function () { //更新粒子的坐标
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x<0||this.x>cW){
+                    this.vx = -this.vx;
+                }
+                if (this.y<0||this.y>cH){
+                    this.vy = -this.vy;
+                }
+            }
+        };
+
+        function start() {
+            for (var i = 0;i < num;i++){
+                var particle = new Particle();
+                particle.drawCircle(ctx);
+                particles.push(particle);//往数组里面添加粒子
+            }
+        }
+        start();
+        function move() {
+            // ctx.clearRect(0,0,cW,cH);
+            ctx.globalCompositeOperation = "source-over";
+            ctx.fillStyle = "rgba(0,0,0,0.5)";
+            ctx.fillRect(0,0,cW,cH);
+            ctx.globalCompositeOperation = "lighter";
+            for (var i = 0,len = particles.length;i < len;i++){
+                particles[i].update();
+                particles[i].drawCircle(ctx);
+            }
+            requestAnimationFrame(move); //CPU钟摆频率
+        }
+        move();
+    </script>
+</html>
